@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random Quotes Generator - DevNova</title>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+
+<!-- Font Awesome 6.4 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
+<!-- CSS Custom -->
+<link rel="stylesheet" href="style.css">
+
+<meta name="author" content="DevNova-ID">
+<meta name="description" content="Random Quotes Generator with Web Scraping API & Canvas Export">
+</head>
+<body>
+<div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-quote-left"></i>
+                <div>
+                    <h1>Random Quotes</h1>
+                    <p class="tagline">Powered by DevNova API</p>
+                </div>
+            </div>
+            <div class="badge">
+                <span class="devnova-badge">
+                    <i class="fas fa-code"></i> DevNova-ID
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-grid">
+            <!-- Left Column - Quote Display -->
+            <div class="quote-column">
+                <!-- Loading State -->
+                <div id="loading" class="loading-container">
+                    <div class="spinner">
+                        <div class="spinner-dot"></div>
+                        <div class="spinner-dot"></div>
+                        <div class="spinner-dot"></div>
+                    </div>
+                    <p class="loading-text">Scraping quotes from Quotes to Scrape...</p>
+                    <div class="loading-bar">
+                        <div class="loading-progress"></div>
+                    </div>
+                </div>
+
+                <!-- Quote Card -->
+                <div id="quote-container" class="quote-card hidden">
+                    <div class="quote-header">
+                        <span class="quote-number">
+                            <i class="fas fa-hashtag"></i> Quote #<span id="quote-counter">1</span>
+                        </span>
+                        <span class="quote-time" id="quote-time"></span>
+                    </div>
+
+                    <div class="quote-body">
+                        <div class="quote-icons">
+                            <i class="fas fa-quote-left quote-icon-left"></i>
+                            <i class="fas fa-quote-right quote-icon-right"></i>
+                        </div>
+                        
+                        <div class="quote-text-container">
+                            <p id="quote-text" class="quote-text">Loading quote...</p>
+                        </div>
+
+                        <div class="quote-author-container">
+                            <div class="author-line"></div>
+                            <div class="author-info">
+                                <span class="author-by">—</span>
+                                <span id="quote-author" class="author-name">Author</span>
+                                <a href="#" id="author-link" class="author-link" target="_blank">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="quote-tags-container">
+                            <div class="tags-label">
+                                <i class="fas fa-tags"></i> Tags:
+                            </div>
+                            <div id="quote-tags" class="tags-list">
+                                <!-- Tags will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="quote-actions">
+                        <div class="actions-grid">
+                            <button id="new-quote-btn" class="btn btn-primary">
+                                <i class="fas fa-random"></i> New Quote
+                            </button>
+                            <button id="copy-quote-btn" class="btn btn-secondary">
+                                <i class="far fa-copy"></i> Copy
+                            </button>
+                            <button id="tweet-quote-btn" class="btn btn-twitter">
+                                <i class="fab fa-twitter"></i> Tweet
+                            </button>
+                            <button id="download-quote-btn" class="btn btn-success">
+                                <i class="fas fa-download"></i> Download Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="quote-stats">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <i class="fas fa-database"></i>
+                                <div class="stat-info">
+                                    <span class="stat-label">Total Quotes</span>
+                                    <span id="total-quotes" class="stat-value">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-sync-alt"></i>
+                                <div class="stat-info">
+                                    <span class="stat-label">Last Updated</span>
+                                    <span id="last-updated" class="stat-value">Just now</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-signal"></i>
+                                <div class="stat-info">
+                                    <span class="stat-label">API Status</span>
+                                    <span id="api-status" class="stat-value status-live">Live</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Preview -->
+                <div id="canvas-preview" class="canvas-container hidden">
+                    <div class="canvas-header">
+                        <h3>
+                            <i class="fas fa-image"></i> Image Preview
+                        </h3>
+                        <button id="close-canvas-btn" class="btn-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="quote-canvas" width="600" height="300"></canvas>
+                    </div>
+                    <div class="canvas-actions">
+                        <button id="save-image-btn" class="btn btn-success">
+                            <i class="fas fa-save"></i> Save Image
+                        </button>
+                        <button id="copy-image-btn" class="btn btn-primary">
+                            <i class="far fa-copy"></i> Copy to Clipboard
+                        </button>
+                        <button id="share-image-btn" class="btn btn-info">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Controls & History -->
+            <div class="controls-column">
+                <!-- Controls Panel -->
+                <div class="controls-panel">
+                    <div class="panel-header">
+                        <i class="fas fa-sliders-h"></i> Scraping Controls
+                    </div>
+                    <div class="panel-body">
+                        <div class="control-group">
+                            <label for="page-select">
+                                <i class="fas fa-file-alt"></i> Select Page
+                            </label>
+                            <select id="page-select" class="form-control">
+                                <option value="1">Page 1</option>
+                                <option value="2">Page 2</option>
+                                <option value="3">Page 3</option>
+                                <option value="4">Page 4</option>
+                                <option value="5">Page 5</option>
+                                <option value="random">Random Page</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="wait-time">
+                                <i class="fas fa-clock"></i> Wait Time: <span id="wait-time-value">2s</span>
+                            </label>
+                            <input type="range" id="wait-time" class="form-range" min="1" max="5" step="0.5" value="2">
+                        </div>
+
+                        <div class="control-group checkboxes">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="include-tags" checked>
+                                <label for="include-tags">
+                                    <i class="fas fa-tag"></i> Include Tags
+                                </label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="include-author" checked>
+                                <label for="include-author">
+                                    <i class="fas fa-user"></i> Include Author
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="control-buttons">
+                            <button id="scrape-now-btn" class="btn btn-warning">
+                                <i class="fas fa-bolt"></i> Scrape Now
+                            </button>
+                            <button id="clear-cache-btn" class="btn btn-outline">
+                                <i class="fas fa-trash-alt"></i> Clear Cache
+                            </button>
+                            <button id="test-api-btn" class="btn btn-info">
+                                <i class="fas fa-vial"></i> Test API
+                            </button>
+                        </div>
+
+                        <div class="api-info">
+                            <h4><i class="fas fa-code"></i> API Information</h4>
+                            <div class="api-details">
+                                <p><strong>Endpoint:</strong> <code>/api/tools/puppeteer</code></p>
+                                <p><strong>Method:</strong> POST with JSON</p>
+                                <p><strong>Source:</strong> quotes.toscrape.com</p>
+                                <p class="api-note">
+                                    <i class="fas fa-shield-alt"></i> Powered by DevNova Web Scraping Technology
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Panel -->
+                <div class="history-panel">
+                    <div class="panel-header">
+                        <i class="fas fa-history"></i> Recent Quotes
+                    </div>
+                    <div class="panel-body">
+                        <div id="quotes-history" class="history-list">
+                            <!-- History items will be populated here -->
+                            <div class="empty-history">
+                                <i class="fas fa-inbox"></i>
+                                <p>No history yet. Start scraping quotes!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <div class="footer-logo">
+                    <i class="fas fa-quote-right"></i>
+                    <div>
+                        <h4>Random Quotes Generator</h4>
+                        <p>Real-time web scraping application</p>
+                    </div>
+                </div>
+                <div class="tech-stack">
+                    <span class="tech-badge">Puppeteer API</span>
+                    <span class="tech-badge">FontAwesome</span>
+                    <span class="tech-badge">HTML5 Canvas</span>
+                    <span class="tech-badge">Vanilla JS</span>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-credit">
+                    <h5>
+                        <i class="fas fa-code-branch"></i> Created by 
+                        <span class="highlight">DevNova-ID</span>
+                    </h5>
+                    <p>Web Scraping & Automation Specialist</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>
+                <i class="fas fa-external-link-alt"></i> Quotes sourced from 
+                <a href="https://quotes.toscrape.com" target="_blank">Quotes to Scrape</a> | 
+                <i class="fas fa-cogs"></i> Powered by 
+                <a href="https://api.devnova.icu/api/tools/puppeteer" target="_blank">DevNova Puppeteer API</a>
+            </p>
+        </div>
+    </footer>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast-notification">
+    <div class="toast-content">
+        <i id="toast-icon" class="fas fa-info-circle"></i>
+        <span id="toast-message">Notification message</span>
+    </div>
+</div>
+
+<!-- External Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<!-- Main Application Script -->
+<script src="script.js"></script>
+</body>
+</html>
