@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto Testing API DevNova</title>
+    <title>Auto Testing API DevNova - Auto Reload</title>
     <style>
         * {
             box-sizing: border-box;
@@ -33,6 +33,7 @@
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(76, 201, 240, 0.2);
+            position: relative;
         }
         
         h1 {
@@ -65,6 +66,22 @@
             100% { opacity: 0.8; }
         }
         
+        .reload-notice {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: 1px solid #dc3545;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         .test-section {
             margin-bottom: 40px;
             background: rgba(0, 0, 0, 0.3);
@@ -81,10 +98,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        
-        .section-title i {
-            font-size: 1.5rem;
         }
         
         .api-info {
@@ -299,6 +312,34 @@
             font-size: 0.9rem;
         }
         
+        .reload-countdown {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 10px;
+            border: 2px solid #dc3545;
+        }
+        
+        .countdown-text {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .countdown-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #dc3545;
+            animation: countdownPulse 1s infinite;
+        }
+        
+        @keyframes countdownPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
         .spinner {
             border: 3px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
@@ -339,6 +380,11 @@
             h1 {
                 font-size: 2rem;
             }
+            
+            .reload-notice {
+                position: static;
+                margin-top: 15px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -374,9 +420,12 @@
     <div class="container">
         <header>
             <h1>Auto Testing API DevNova</h1>
-            <p class="subtitle">Halaman ini akan secara otomatis melakukan SEMUA testing API saat dimuat. Tidak diperlukan interaksi pengguna sama sekali.</p>
+            <p class="subtitle">Halaman ini akan secara otomatis melakukan SEMUA testing API saat dimuat, dan akan reload otomatis setelah selesai.</p>
             <div class="auto-notice">
                 ⚡ Semua testing API akan berjalan otomatis dalam beberapa detik...
+            </div>
+            <div class="reload-notice">
+                <span>🔄 AUTO-RELOAD AKTIF</span>
             </div>
         </header>
         
@@ -522,9 +571,16 @@
             </div>
         </div>
         
+        <!-- Countdown untuk Reload -->
+        <div class="reload-countdown" id="reload-countdown" style="display: none;">
+            <div class="countdown-text">Halaman akan di-reload otomatis dalam:</div>
+            <div class="countdown-number" id="countdown-number">10</div>
+            <div class="countdown-text">detik</div>
+        </div>
+        
         <div class="footer">
-            <p>Auto Testing API DevNova &copy; 2023 | Semua testing berjalan otomatis tanpa interaksi pengguna</p>
-            <p>Halaman ini dibuat untuk keperluan testing API secara otomatis</p>
+            <p>Auto Testing API DevNova &copy; 2023 | Halaman akan reload otomatis setelah semua testing selesai</p>
+            <p>Testing berjalan terus menerus untuk monitoring API</p>
         </div>
     </div>
 
@@ -534,6 +590,8 @@
         let completedTests = 0;
         let successfulTests = 0;
         let failedTests = 0;
+        let countdownInterval = null;
+        let countdownTime = 10; // 10 detik sebelum reload
         
         // Fungsi untuk mengupdate progress bar
         function updateProgress() {
@@ -546,15 +604,19 @@
             progressCurrent.textContent = completedTests;
             progressTotal.textContent = totalTests;
             
-            // Jika semua test selesai, tampilkan summary
+            // Jika semua test selesai, tampilkan summary dan mulai countdown
             if (completedTests === totalTests) {
                 setTimeout(() => {
                     document.getElementById('summary-section').style.display = 'block';
+                    document.getElementById('reload-countdown').style.display = 'block';
                     document.getElementById('stat-success').textContent = successfulTests;
                     document.getElementById('stat-error').textContent = failedTests;
                     document.getElementById('stat-total').textContent = totalTests;
                     document.getElementById('stat-percentage').textContent = 
                         `${Math.round((successfulTests / totalTests) * 100)}%`;
+                    
+                    // Mulai countdown untuk reload
+                    startReloadCountdown();
                 }, 1000);
             }
         }
@@ -577,6 +639,30 @@
             detailsElement.textContent = details;
             completedTests++;
             updateProgress();
+        }
+        
+        // Fungsi untuk memulai countdown sebelum reload
+        function startReloadCountdown() {
+            const countdownElement = document.getElementById('countdown-number');
+            let timeLeft = countdownTime;
+            
+            countdownElement.textContent = timeLeft;
+            
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    performReload();
+                }
+            }, 1000);
+        }
+        
+        // Fungsi untuk melakukan reload halaman
+        function performReload() {
+            console.log('Reloading halaman...');
+            location.reload();
         }
         
         // Fungsi utama untuk menjalankan semua test otomatis
@@ -743,7 +829,7 @@
                     `Gagal: ${error.message}`, false);
             }
             
-            console.log('Semua testing API selesai!');
+            console.log('Semua testing API selesai! Halaman akan reload dalam 10 detik...');
         }
         
         // Jalankan semua test saat halaman dimuat
@@ -753,6 +839,16 @@
                 runAllTests();
             }, 1000);
         };
+        
+        // Jika pengguna ingin membatalkan reload, mereka bisa tekan ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && countdownInterval) {
+                clearInterval(countdownInterval);
+                document.getElementById('reload-countdown').innerHTML = 
+                    '<div class="countdown-text">Reload dibatalkan oleh pengguna (tekan ESC)</div>';
+                console.log('Reload dibatalkan oleh pengguna');
+            }
+        });
     </script>
 </body>
 </html>
